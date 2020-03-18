@@ -5,7 +5,7 @@ The University of Rhode Island. These projects involve different types of analys
 tools. Each project will have details on what is being performed, including the data sets and the final analysis. 
 
 
-##### Programming for Data Science
+### Programming for Data Science
 
 ###### [Project 1](https://github.com/giuliarapisardi/Portfolio/blob/master/Notebooks/CSC%20310/Lab%202%20-%20Data%20Set%20Analysis%20(1).ipynb)
 - This project demonstrates a basic analysis of the given dataset that provides information on different details of different car models. 
@@ -17,7 +17,7 @@ tools. Each project will have details on what is being performed, including the 
 - Visualizations are a universal way of understanding data and trends in data. This project focuses on creating visualizing the dataset to show different distributions throughout the data and to better help understand the data.
 
 
-##### Introduction to Computer Programming
+### Introduction to Computer Programming
 
 ###### Project Overview
 - This project was developed over the course of a semester from a dataset that provided information on thousands of YouTube channels. I developed a data driven question after observing the various attributes involved, Is there a relationship between the number of videos uploaded and the quality of the Youtube Channel? Throughout these projects I aim to gain more information through analysis to answer this question. 
