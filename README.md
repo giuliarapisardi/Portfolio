@@ -1,9 +1,13 @@
 # Giulia Rapisardi's Portfolio
 
 Here you can find various projects that I have worked on in the different courses I have completed at 
-The University of Rhode Island. These projects involve different types of analysis using different data analysis
-tools. Each project will have details on what is being performed, including the data sets and the final analysis. 
+The University of Rhode Island and Boston University. These projects involve different types of analysis using different data analysis
+tools and prograams. Each project will have details on what is being performed, including the data sets and the final analysis. 
 
+### Foundations of Analytics with R
+
+##### [Final Analysis with R](file:///Users/giuliarapisardi/Desktop/BU/CS%20544/Final%20Project/CS544_Final-Markdown.html)
+- This project is based off a dataset that provides details on the Top 50 Songs on Spotify from the Year 2019. The project invovles a semesters worth of R analysis skills that aid in answering the objective of whether or not there arae common aspects of hit songs that make them popular. Analysis skills were also used to find whether or not certain artists or genres were more successful than others.
 
 ### Programming for Data Science
 
