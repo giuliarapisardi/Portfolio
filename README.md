@@ -6,7 +6,7 @@ tools and prograams. Each project will have details on what is being performed, 
 
 ### Foundations of Analytics with R
 
-##### [Final Analysis with R](file:///Users/giuliarapisardi/Desktop/BU/CS%20544/Final%20Project/CS544_Final-Markdown.html)
+##### [Final Analysis with R](https://github.com/giuliarapisardi/Portfolio/blob/master/R/CS544Final_Rapisardi.md)
 - This project is based off a dataset that provides details on the Top 50 Songs on Spotify from the Year 2019. The project invovles a semesters worth of R analysis skills that aid in answering the objective of whether or not there arae common aspects of hit songs that make them popular. Analysis skills were also used to find whether or not certain artists or genres were more successful than others.
 
 ### Programming for Data Science
