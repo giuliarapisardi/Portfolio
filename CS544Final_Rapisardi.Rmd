@@ -2,7 +2,7 @@
 title: "CS544Final_Rapisardi"
 author: "Giulia Rapisardi"
 date: "12/17/2020"
-output: html_document
+output: github_document
 ---
 
 
@@ -124,7 +124,7 @@ par(mfrow = c(2,2))
 
 for (size in c(90, 100, 150, 160)) {
   for (i in 1:samples) {
-    xbar[i] <- mean(sample(spotify$Beats.Per.Minute, size = sample.size,
+    xbar[i] <- mean(sample(spotify$Beats.Per.Minute, size = size,
                            replace = TRUE))
   }
   
@@ -204,7 +204,7 @@ par(mfrow = c(2,2))
 
 for (size in c(75, 100, 125, 150)) {
   for (i in 1:samples) {
-    xbar[i] <- mean(sample(spotify$Length., size = sample.size,
+    xbar[i] <- mean(sample(spotify$Length., size = size,
                                 replace = TRUE) )
   }
   

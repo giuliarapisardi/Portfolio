@@ -136,15 +136,15 @@ processed which states, that the sample means from a sample of the
 population will have a normal distribution. Below, determines if as the
 sample size increases, we get a normal distribution for this variable.
 
-    ## Sample Size =  90  Mean =  120  SD =  9.677237
+    ## Sample Size =  90  Mean =  120  SD =  3.305424
 
-    ## Sample Size =  100  Mean =  120  SD =  9.546664
+    ## Sample Size =  100  Mean =  120  SD =  3.032363
 
-    ## Sample Size =  150  Mean =  120  SD =  9.701234
+    ## Sample Size =  150  Mean =  120  SD =  2.488487
 
 ![](CS544Final_Rapisardi_files/figure-gfm/bpm%20CLT-1.png)<!-- -->
 
-    ## Sample Size =  160  Mean =  120  SD =  9.610371
+    ## Sample Size =  160  Mean =  120  SD =  2.423434
 
 For this test a large sample size is used to compare what the
 distribution for this data would look like if it was on the scale of
@@ -254,15 +254,15 @@ per minute in the data. The samples of the population are centered
 around the sample mean; in this case the sample mean is
 201.
 
-    ## Sample Size =  75  Mean =  201  SD =  12.35633
+    ## Sample Size =  75  Mean =  201  SD =  4.694813
 
-    ## Sample Size =  100  Mean =  201  SD =  12.16982
+    ## Sample Size =  100  Mean =  201  SD =  4.035943
 
-    ## Sample Size =  125  Mean =  201  SD =  12.57756
+    ## Sample Size =  125  Mean =  201  SD =  3.494858
 
 ![](CS544Final_Rapisardi_files/figure-gfm/song%20length%20vs%20rank%20CLT-1.png)<!-- -->
 
-    ## Sample Size =  150  Mean =  201  SD =  12.27763
+    ## Sample Size =  150  Mean =  201  SD =  3.199411
 
 The above histograms show that the larger the sample size the more the
 distribution mimics that of a normal distribution. The larger sample
