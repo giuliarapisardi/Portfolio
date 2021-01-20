@@ -2,7 +2,7 @@
 
 Here you can find various projects that I have worked on in the different courses I have completed at 
 The University of Rhode Island and Boston University. These projects involve different types of analysis using different data analysis
-tools and prograams. Each project will have details on what is being performed, including the data sets and the final analysis. 
+tools and programs. Each project will have details on what is being performed, including the data sets and the final analysis. 
 
 ### Foundations of Analytics with R
 
