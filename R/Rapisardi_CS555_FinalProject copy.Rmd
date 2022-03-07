@@ -1,0 +1,414 @@
+---
+title: "Final Project"
+author: "Giulia Rapisardi"
+date: "2/24/2021"
+output: "github_document"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+# Won't show the code in the document
+library(knitr) # Need knitr for kable and the appendix
+```
+
+#### 1. Research Scenario and Question
+*Dataset on Amazon's Top 50 bestselling books from 2009 to 2019. Contains 550 books, data has been categorized into fiction and non-fiction using Goodreads*
+
+The data uses Goodreads to rate Non-Fiction and Fiction books form Amazon's Top 50 bestselling books from 2009 to 2019. The particular reason that I chose this data set was to understand the relationship between Non-Fiction and Fiction books and what their similarities/differences are and how they ended up on the Top 50 bestselling. This particular dataset has many attributes that can be incredibly influencial in helping to understand this relationship by taking more than one attribute into consideration. First and foremost we must understand each attribute and what it means before we answer the question of interest. **What are the relationships between different Genres of books? More specifically, is there a difference between Fiction and Non-Fiction books? Do these differences or similarities make then more appealing to be in the top 50 bestselling?**
+
+#### 2. Data Description
+
+The original page that the data was found at can be located [here](https://www.kaggle.com/sootersaalu/amazon-top-50-bestselling-books-2009-2019)
+
+The data uses basic book information with collaboration between Amazon and Goodreads to create each record. It allows the reader to understand basic information about each book and what year they were placed in the top 50 bestselling books along with corresponding statistics that give reason to that books rating. 
+
+* Name
+  + Title of the Book
+
+* Author
+  + Author of the Book
+
+* User.Rating
+  + Amazon User Rating
+
+* Reviews
+  + Number of Reviews Written on Amazon
+
+* Price 
+  + The price of the book (As at 13/10/2020)
+
+* Year 
+  + The Year(s) it ranked on the bestseller
+
+* Genre 
+  + Whether the book is Fiction or Non-Fiction
+
+The main attributes that will be used for this analysis are
+
+* User.Rating
+* Reviews
+* Price 
+* Year
+
+Previously, the dataset had been cleaned in Excel so that the duplicate books were taken out of the dataset if the Reviews count and User.Rating were equal for both records. This was to execute precise statistics that were not skewed by repetitive numbers. The data was then sorted using R so that User Ratings were in order from largest to smallest. 
+
+#### 3. Statistical Methods
+
+Throughout this analysis there will be two statistical methods used to help answer the question of interest.
+
+* One-Way ANOVA
+  + Determines whether there are any statistically significant differences between the means of two or more independent groups.
+  
+* ANCOVA
+  + Extension of the ANOVA procedure to adjust or control for one or more continuous or categorical variables.
+
+#### 4. Analysis
+
+```{r Reading in data and packages, include=FALSE}
+# Load Packages -----------------------------------------------------------
+
+library(readr)
+library(plyr)
+library(ggplot2)
+library(dplyr)
+library(lsmeans)
+getwd()
+setwd("/Users/giuliarapisardi/Desktop/BU/CS 555/Final Project")
+
+
+# Read In the Data and Cleaning -------------------------------------------------------
+
+## reading
+data.original <- read.csv('bestsellerbooks.csv')
+
+## ordering the data by rating from largest to smallest
+rating.order <- order(data.original$User.Rating, decreasing=TRUE)
+
+## rename data 
+books <- data.original[rating.order, ]
+
+## remove duplicated rows
+books <- books %>% distinct(Author,User.Rating, .keep_all = TRUE)
+```
+
+First, to get a sense of all relationships between the data attributes Scatterplot Matrices were created to show the different relationships, their correlation, scatterplots, and histograms of the frequencies of each attribute.
+
+```{r Scatterplot Matrices Functions, include=FALSE}
+# Scatterplot Matrices ----------------------------------------------------
+
+panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y, use="complete.obs"))
+  txt <- format(c(r, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * (1 + r) / 2)
+}
+
+panel.hist <- function(x, ...) {
+  usr <- par("usr")
+  on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks
+  nB <- length(breaks)
+  y <- h$counts
+  y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col="forestgreen", ...)
+}
+
+panel.lm <- function (x, y, col = par("col"), bg = NA, pch = par("pch"),
+                      cex = 1, col.smooth = "black", ...) {
+  points(x, y, pch = pch, col = col, bg = bg, cex = cex)
+  abline(stats::lm(y ~ x), col = col.smooth, ...)
+}
+```
+```{r Scatterplot Matrices}
+pairs(books,upper.panel=panel.cor, diag.panel=panel.hist, lower.panel=panel.lm)
+
+```
+
+The scatterplots reveals relationships and how strong they are right away. The strongest relationship is between Reviews and Genre. These variables will be looked at in greater detail later on. 
+
+Before the next statistical methods are calculated the data was numerically summarized between different variables and Non-Fiction or Fiction books. This can help to understand Non-Fiction and Fiction books and the variables that the analysis will be performed on and their influence. 
+
+```{r Numerical summaries}
+price.books <- ddply(books, 'Genre', summarise,
+                     N = length(Price),
+                     mean = mean(Price),
+                     sd = sd(Price))
+kable(price.books,
+      align = "c",
+      caption = "Prices of Non-Fiction vs Fiction Books")
+
+rating.books <- ddply(books, "Genre", summarise,
+                      N = length(User.Rating),
+                      mean = mean(User.Rating),
+                      sd = sd(User.Rating))
+kable(rating.books,
+      align = "c",
+      caption = "Ratings of Non-Fiction vs Fiction Books")
+
+reviews.books <- ddply(books, "Genre", summarise,
+                       N = length(Reviews),
+                       mean = mean(Reviews),
+                       sd = sd(Reviews))
+kable(reviews.books,
+      align = "c",
+      caption = "Review Counts of Non-Fiction vs Fiction Books")
+
+
+```
+
+From these numerical summaries some striking results are relating to Prices between Genres and Review Counts. The mean price of books Non-Fiction or Fiction are similar, only varying a few dollars. A formal test will be provided later referrign to Price and Genre. Then there are Ratings and Review Counts. Although Review Counts for Fiction books are double that of Non-Fiction the average rating for Fiction vs. Non-Fiction is relatively the same. This could indicate that the number of Reviews has no relationship of the Rating of a book or that Non-Fiction books tend to be rated higher. 
+
+
+Graphical summaries can help understand these relationships and provide information on the data to support or make conclusions easily. 
+
+```{r Graphical Summaries}
+price.plot <- ggplot(books, aes(x=Genre, y=Price, fill=Genre)) +
+  geom_boxplot(outlier.color = 'red',
+               outlier.size = 4) + 
+  ggtitle('Variation in Prices by Genres')
+
+rating.plot <- ggplot(books, aes(x=Genre, y=User.Rating, fill=Genre)) +
+  geom_boxplot(outlier.color = 'red',
+               outlier.size = 4) + 
+  ggtitle('Variation in Ratings by Genres')
+
+reviews.plot <- ggplot(books, aes(x=Genre, y=Reviews, fill=Genre)) +
+  geom_boxplot(outlier.color = 'red',
+               outlier.size = 4) + 
+  ggtitle('Variation in Review Count by Genres')
+
+price.plot
+rating.plot
+reviews.plot
+
+```
+
+These graphical summaries show the variation in the three variables mentioned previously. The boxplots show that the data for Prices of books both Non-Fiction and Fiction are similar in variance and range, even the outliers are similar which can support the idea that the average price for Non-Fiction and Fiction are very close to the mean and accuracy increases. Whereas looking at the boxplots for Ratings and Review Count the variability for both Fiction and Non-Fiction differs along with a much different set of outliers. This indicates the difference in data values between Fiction and Non-Fiction for these variables. 
+
+
+Distribution summaries will also help to understand the center of data for Genres depending on the either Price, User Rating, or Reviews. 
+
+```{r Distribution Summaries} 
+price.dist <- ggplot(books, aes(x=Price, colour=Genre)) +
+  geom_density() +
+  geom_vline(data=price.books, aes(xintercept=mean, colour=Genre),
+             linetype="dashed", size=1)
+
+rating.dist <- ggplot(books, aes(x=User.Rating, colour=Genre)) +
+  geom_density() +
+  geom_vline(data=rating.books, aes(xintercept=mean, colour=Genre),
+             linetype="dashed", size=1)
+
+reviews.dist <- ggplot(books, aes(x=Reviews, colour=Genre)) +
+  geom_density() +
+  geom_vline(data=reviews.books, aes(xintercept=mean, colour=Genre),
+             linetype="dashed", size=1)
+
+price.dist
+rating.dist
+reviews.dist
+```
+
+These distributions show how the data is laid out in relation to the mean. First looking at Price we can see that the data distribution for both Fiction and Non-Fiction is similar and both are skewed to the right which indicates that the mean is greater than the median value. Therefore, when looking at Price vs. Genre it would be best to say that the median describes the center of the data best. 
+
+Next, looking at User.Rating and Genre both are left-skewed which indicates that the mean value is less than the median value, but still since it is skewed data we would use the median to describe the center of data best. 
+
+Lastly, Reviews and Genre. Similar to Price and Genre these distributions are not only right-skewed but also dramatically different in density and neither is centered around the mean. Again we would use the median to desscribe the center of this data as the mean value is greaater than the median. 
+
+All of these distributions can provide insight on how different values of the data are spread out, the range of the data, and which statistical summaries can best provide referencial information when performing tests later on. 
+
+##### Analysis I 
+
+Previously, there were remarks mentioned about Prices and Genres of books, and whether or not the Prices vary depending on the Genre of the book. A formal test can be performed to either confirm these assumptions made previously or to see if the assumptions made were misleading. Therefore, an ANOVA test will be performed at the $$ \alpha = 0.05 $$ level.
+
+```{r Analysis II,include=FALSE}
+is.factor(books$Genre) ## true
+
+## ANOVA 
+aov(books$Price ~ books$Genre)
+m.price <- aov(books$Price ~ books$Genre, data = books)
+
+## f distribution
+qf(0.95, df1 = 1, df2 = 299)
+
+summary(m.price)
+## /// f-dist calue is 3.8727 so we reject H0 because f = 4.567 > 3.8727
+## /// OR because p-value is 0.0334
+
+
+```
+
+Before we begin the ANOVA process, we can confirm that the variable is indeed a factor for the data.
+
+*Step 1: Set up the Hypothesis*
+
+* $$ H_0 : \mu_{1} = ... = \mu_{k}  $$
+  + (all population means are equal)
+  
+* $$ H_a : \mu_{i} \ne \mu_{j}  $$ for some i and j 
+  + (at least two of the population means are different or not all of the population means are equal)
+  
+* $$ \alpha = 0.05 $$
+
+*Step 2: Select the appropriate test statistic* 
+
+* $$ F = \frac{MSB}{MSW}, df_1 = k - 1, df_2 = N - k $$
+
+*Step 3: State the Decision Rule* 
+
+* Determine the appropriate value from the *F*-distribution with k - 1 = 2 - 1 = 1, 301 - 2 = 299 degrees of freedom and associated with a right hand tail probability of $$ \alpha = 0.05$$. 
+
+* Using R, $$ F_{k - 1, N - k, \alpha} = F_{1, 299, 0.05} \approx 3.8727 $$
+
+* Decision Rule: Reject $$ H_0 $$ if $$ F \ge 3.8727  $$ OR Reject $$ H_0 $$ if $$ p-value < \alpha = 0.05$$
+
+* Otherwise, do not reject $$ H_0 $$
+
+*Step 4: Compute the Test Statistic and P-Value*
+
+* $$ F = \frac{MSB}{MSW} \approx 4.5684  $$
+* $$ p-value = 0.0334 $$
+* $$ df = 1, 299 $$ 
+
+*Step 5: Conclusion*
+
+* Reject $$H_0$$ 
+
+* $$ F-statistic: 4.5684 \ge 3.8727 $$ and $$ p-value: 0.0334 \le 0.05 $$
+
+* We reject H0 since $$ F-statistic: 4.5684 \ge 3.8727 $$ and $$ p-value: 0.0334 \le 0.05 $$. We have significant evidence at the $$ \alpha = 0.05$$ level that at least two of the population means of the different groups in the data set are different or not all of the population means are equal. That is, there is evidence of significance between the means of Fiction and Non-Fiction books prices. (here, p < 0.0334 as calculated using R).
+
+* Since we found that the overall model was significant we will perform the Tukey pariwise comparison to control the Type I error rate which is the probabiltiy that the null hypothesis was rejected when in fact it was true.
+
+```{r Analysis II Tukey Test}
+## pairwise comparison
+pc <- TukeyHSD(m.price)
+
+genre.tukey <- pc$`books$Genre`
+
+kable(genre.tukey,
+      align = "c",
+      caption = "Tukey Pairwise Comparison")
+```
+
+The Tukey Pairwise Comparison is the more accurate test when wanting to do more multiple comparisons at an adjusted significance level. Here, the p-values for the group comparisons determine their significance. Since we only have two groups Non-Fiction and Fiction we can only have one comparison and the p-value for this comparison stays significant. With a p-value of 0.0334 < 0.05 we can say that the prices do vary between books. 
+
+*** 
+
+##### Analysis II
+**Create an appropriate number of dummy variables for genre and re-run the one-way ANOVA using the lm function with the newly created dummy variables. Set fiction as the reference group. Confirm the results are the same (specifically point out test statistics, p-values, etc. that show the results are equivalent). What is the interpretation of the beta estimates from the regression model?**
+
+```{r Analysis III }
+ ## dummy variables
+books$g0 <- ifelse(books$Genre == "Non Fiction", 1, 0) # Non fiction
+
+m2 <- lm(books$Price ~ g0, data = books)
+#summary(m2)
+
+est <- c("11.639", "2.428")
+std.error <- c("0.876" , "1.136")
+t.val <- c("13.286","2.136")
+p.val <- c("<2e-16", "0.0334")
+
+owanova.table <- data.frame(est, std.error, t.val, p.val)
+colnames(owanova.table) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+rownames(owanova.table) <- c("Intercept", "Non Fiction")
+kable(owanova.table,
+      align = "c",
+      caption = "One-Way ANOVA - Reference Group: Fiction")
+
+
+
+```
+
+* Our F-statistics stays the same at a value of 4.567 with 1 and 299 as our degrees of freedom allowing us to support our claim of significance for the model. The model also shows the p-values and their significance when comparing the other Genres to Fiction as well as the p-value for the model. Previously when running the ANOVA for the model we found that the relationship of Non-Fiction and Fiction books was significant as the p-value was less than the signficiance level $$ \alpha = 0.05 $$. These relationships hold as the p-value for Non-Fiction and Fiction stays the same at **0.0334**. Overall, any results made about the reference group in the previous ANOVA model are equivalent to the results when created with the dummy variables.
+
+* We are also able to formulate a regression equation from our model.
+
+$$ \hat{y} = \hat{\beta_0}x + \hat{\beta_1}x + \epsilon $$
+
+$$ \hat{y} = 11.639344 + 2.427695x_{NonFiction} $$ 
+* Where $$ \hat{\beta_0} $$ is the intercept for the model and represents the mean for the reference group which in this case is the average price of Fiction books **$11.64**.
+
+* Next is $$ \hat{\beta_1} $$ which is the slope for the model, in particular the mean difference between Non-Fiction and Fiction book prices **$2.43**. This positive value indicates that the average price for Non-Fiction books was greater than that of Fiction books. 
+
+##### Analysis III 
+
+**Now, the one-way ANOVA can be adjusted for User.Rating also known as ANCOVA. The main focus on these outputs will be relating to the comparisons of prices to genres.**
+
+```{r ANCOVA}
+### Re-do the one-way ANOVA adjusting for rating (ANCOVA). 
+m_rating <- lm(Price ~ Genre, User.Rating, data = books)
+#summary(m_rating)
+
+est <- c('7.00e+00','3.700e+01')
+std.err <- c('5.875e-14','5.925e-14')
+t.val <- c('1.191e+14', '7.933e+14')
+p.val <- c('<2e-16','<2e-16')
+
+ancova.table <- data.frame(est, std.err, t.val, p.val)
+colnames(ancova.table) <- c('Estimate', 'Std. Error', 't value', 'Pr(>|t|)')
+rownames(ancova.table) <- c('Intercept', 'Genre: Non-Fiction')
+
+kable(ancova.table,
+      align = "c",
+      caption = "ANCOVA Table")
+```
+
+* Using ANOVA allows for a comparison of different variable means between one or more populations, using ANCOVA allows for a continuation of comparing means in differenct populations but with the addition of other variables as well as the variables in the ANOVA model. ANCOVA provides the significance of the mean prices between genres while also taking into consideration their ratings provided by the users of goodreads when determining significance. ANCOVA also answers the question if there is a difference in the means when multiple groups are being compared and another variable is factored in that could possibly be influencial. ANOVA only helps to answer the question of whether or not there is a difference in the means when multiple groups are being compared. 
+
+* The overall results do not change when adjusting for user ratings. Previoiusly when ANOVA was calculated the significance of between Non-Fiction and Fiction books and their prices was confirmed. ANCOVA also determined similar resultss with p-vales significantly small, especially for the $$ \beta_1 $$ coefficient. This indicates that after accounting for user ratings, assuming every book received the same rating that the genre of the book can explain variability in prices. The p-value of this model is very small so the ANCOVA models legitimacy is accounted for and user ratings can be deemed a significant variable in the model.
+
+* Lastly, we can look at the least square means which will allow us to look at the means of the different genres that are adjusted based on the ratings of the books and their corresponding genres.
+
+```{r Analysis IV Least Square Means}
+options(contrasts = c('contr.treatment', 'contr.poly'))
+lsmeans.rating <- lsmeans(m_rating, pairwise ~ Genre, adjust = 'tukey')
+books.lsmeans <- lsmeans.rating$lsmeans
+
+kable(books.lsmeans,
+      align = "c",
+      col.names =  c("Group","lsmean", "SE", "Df", "Lower CL", "Upper CL"),
+      caption = "Least Square Means")
+```
+
+
+* Least Square Means and Tukey Pairwise comparison provide similar information, the Tukey adjustment is also used when calculating the Least Square Means. The lsmeans column provides the mean price for each genre of book or group if each genre had the same rating, this rating is based around the mean rating for the data set. The difference between the two means is drastic ranging from 7 to 54, at a value of 47. This indicates that when the ratings are the same Non-Fiction books are prices significantly higher than Fiction books. 
+
+
+
+\newpage
+
+#### Results & Conclusion
+
+Initially the question of is there a difference between Fiction and Non-Fiction books had an uncertain answer. Now with the results calculated previously an answer to the question can be better formulated. 
+
+Through the ANOVA test there was significant evidence that the Prices of Non-Fiction and Fiction books had a signficant relationship. This means that the price of a book can be influenced by the genre and was proven significant when adjusting the significance level using the Tukey Pairwise Comparison and still recieveing the same results. 
+
+The next question to ask is, if the price is significant and we know that the means for these genres are not equal based off of numerical summaries previously calculated then what are the differences? This can be best represented in a linear regression model, which was previously calculated, which stated that the mean difference between Non-Fiction and Fiction books prices wass about $2.43, which indiciates that Non-Fiction books on average have higher pricess than that of Fiction books. Although this may lead to the assumption that readers are more likely to read Fiction books because they are lower in price the dataset contained more Non-Fiction books than Fiction. Non-Fiction books did receive a slightly higher average rating than Fiction which could support the idea of higher prices as they are in more of a demand and seem to be more liked. 
+
+The testing of just price with genres doesn't look at much of the dataset, so a variable being added like User.Rating can help to gain further knowledge on the influence of price on genres. Although the average user rating for Non-Fiction was larger than the average rating for Fiction both were very close and when factoring in rating to the analysis, the results were similar to the previous analysis test and still provided a result of significance and further proved that Non-Fiction books even when set to have the same rating as Fiction books, are priced higher. 
+
+Overall, when taking into consideration many variables there seems to be a difference in price of the genres of books in the dataset but the likeliness based off of the rating is relatively equal. Therefore, there is no one thing that makes Non-fiction or Fiction books more liked than the other or be more appealing to land in the top 50. Non-Fiction books are priced higher on average and seem to appear in the top 50 more frequently than Fiction so price is not an influence of rating. Some things that could land them in the Top 50 or influencial factors that would do so are marketing or number of books sold which are both not included in this data set. 
+
+#### Limitations
+
+A limitation that occured to me were that since my population sample sizes weren't even that I would not get accurate or legitimate results. I think that both ANOVA and ANCOVA provided results that can be supported by numerical and graphical summaries but the initial worry was that uneven populations would cause issues. Another limitation that was confusing at first was that a book could place on the top 50 more than once, with the same rating, review count, and price. A worry initially was that keeping them would sway the results as if there were repeating values in a data set without unique identifiers, which led to the removal of duplicates, but, there is still limitations as the data set did not contain all original values. 
+
+Also, having so few attributes that can be properly used to run these test set the analysis back a bit. Having only seven attributes and two of them being categorical along with one being year, they were more difficult to maneuver into my analysis. Year could have been used to subset the data and look at analysis of books past the year 2010 to see the influence of technology on books and their ratings, but, it would not have helped to answer my question of interest. 
+
+
+
+
+
+## Appendix: R Code
+
+```{r show-code, ref.label=all_labels(), echo = TRUE, eval=FALSE}
+
+```
